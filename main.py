@@ -1,6 +1,13 @@
 import firebase_admin
+from google.cloud import storage
 from firebase_admin import credentials, firestore
 import json
+
+def create_bucket(bucket_name):
+    storage_client = storage.Client()
+    bucket = storage_client.create_bucket(bucket_name)
+    print(f"Bucket {bucket.name} created")
+    return bucket
 
 # Authenticate connection to firebase
 cred = credentials.Certificate("serviceAccountKey.json")
@@ -18,6 +25,7 @@ with open('messages.json', 'w') as file:
 # Get all of the message documents and store it in the json
 docs = db.collection('messages').get()
 for doc in docs:
+    # In read and write mode
     with open('messages.json', 'r+') as file:
         # Load existing data
         data = json.load(file)
@@ -34,3 +42,12 @@ for doc in docs:
 with open("messages.json", "r") as file:
     r = json.load(file)
     print(r)
+
+# bucket = create_bucket("messages_bucket")
+storage_client = storage.Client()
+bucket = storage_client.get_bucket("dash-beta-e61d0-messages")
+blob = bucket.blob('message')
+blob.upload_from_filename("messages.json")
+print("Uploaded messages!")
+
+
