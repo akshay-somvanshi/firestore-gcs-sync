@@ -3,6 +3,8 @@ from google.cloud import storage
 from firebase_admin import credentials, firestore
 import json
 from collections import defaultdict
+from datetime import datetime, time
+import os 
 
 def create_bucket(bucket_name):
     storage_client = storage.Client()
@@ -28,16 +30,31 @@ for doc in docs:
     grouped_messages[doc.to_dict()['uid']].append(doc.to_dict())
 
 for user, item in grouped_messages.items():
+    # A late messages list which is instantiated per user 
+    late_msgs = []
+
     # Safeguard: in case of an empty message (if the user still writes a message without any remaining chat searches left)
     if all('timeStamp' in msg for msg in item):
-        item.sort(key=lambda msg: msg['timeStamp'], reverse=True)
+        item.sort(key=lambda msg: datetime.fromisoformat(str(msg['timeStamp'])), reverse=True)
     else:
         print(f"No timestamp found for user {user}")
 
-    with open(f'{user}.json', 'w') as file:
+    # Make the user folders 
+    os.makedirs(f'chats/{user}', exist_ok=True)
+
+    # Create a shallow copy of item, so we can remove items from it. 
+    for msg in item[:]: 
+        # If the message was sent after the latest time
+        if(msg['timeStamp'].time() >= time(15,0)):
+            late_msgs.append(msg)
+            item.remove(msg)
+    
+    with open(f'chats/{user}/early_session.json', 'w') as file:
         # Write the data (default str is for timestamp)
         json.dump(item, file, default=str, indent=2)    
 
+    with open(f'chats/{user}/late_session.json', 'w') as file:
+        json.dump(late_msgs, file, default=str, indent=2)
 
 # print(dict(grouped_messages))
 
