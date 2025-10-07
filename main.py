@@ -29,6 +29,15 @@ for doc in docs:
     # Store the messages based on the userID: every message from a userID is grouped. 
     grouped_messages[doc.to_dict()['uid']].append(doc.to_dict())
 
+# Get todays date 
+today = datetime.now()
+cutoff_early = time(9, 0)
+cutoff_late = time(15, 0)
+
+# Connect to google cloud
+storage_client = storage.Client()
+bucket = storage_client.get_bucket("dash-beta-e61d0-messages")
+
 for user, item in grouped_messages.items():
     # A late messages list which is instantiated per user 
     late_msgs = []
@@ -49,20 +58,36 @@ for user, item in grouped_messages.items():
             late_msgs.append(msg)
             item.remove(msg)
     
-    with open(f'chats/{user}/early_session.json', 'w') as file:
+    # Create the date and time strings to pass as session names
+    date_str = today.date().isoformat()
+    time_str = cutoff_early.strftime('%H-%M')
+
+    # Create the local path to store the json
+    local_path = f'chats/{user}/{date_str}_{time_str}.json'
+
+    with open(local_path, 'w') as file:
         # Write the data (default str is for timestamp)
         json.dump(item, file, default=str, indent=2)    
 
-    with open(f'chats/{user}/late_session.json', 'w') as file:
-        json.dump(late_msgs, file, default=str, indent=2)
+    # Create a similar path in GCS and store the files there
+    gcs_path = f'chats/{user}/{date_str}_{time_str}.json'
+    blob = bucket.blob(gcs_path)
+    blob.upload_from_filename(local_path)
 
-# print(dict(grouped_messages))
+    time_str = cutoff_late.strftime('%H-%M')
 
-# bucket = create_bucket("messages_bucket")
-# storage_client = storage.Client()
-# bucket = storage_client.get_bucket("dash-beta-e61d0-messages")
-# blob = bucket.blob(f'chat/{user}/{user}.json')
-# blob.upload_from_filename(f'{user}.json')
-# print("Uploaded messages!")
+    # If the user has no late messages, dont write any file
+    if late_msgs:
+        # Update the local path and GCS path for late messages 
+        local_path = f'chats/{user}/{date_str}_{time_str}.json'
+        gcs_path = f'chats/{user}/{date_str}_{time_str}.json'
+
+        with open(local_path, 'w') as file:
+            json.dump(late_msgs, file, default=str, indent=2)
+
+        blob = bucket.blob(gcs_path)
+        blob.upload_from_filename(local_path)
+
+print("Uploaded messages!")
 
 
