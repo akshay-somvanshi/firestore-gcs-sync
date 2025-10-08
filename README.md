@@ -12,14 +12,14 @@ This script addresses that limitation by:
 The goal is to maintain a daily backup of Firestore message history in GCS for analysis, auditing, or recovery.
 
 ## Repository structure
-
+```
 firestore-gcs-export/ 
 ├── main.py # Main script to query Firestore and upload JSON to GCS 
 ├── requirements.txt # Python dependencies 
 ├── README.md # Project documentation 
 └── cloud_version
     └── cloud.py # main.py adjusted to deploy script on Google cloud run 
-
+```
 ## Setup
 
 ### 1. Clone the repository
