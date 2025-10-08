@@ -24,3 +24,24 @@ The goal is to maintain a daily backup of Firestore message history in GCS for a
 git clone https://github.com/your-org/firestore-gcs-export.git
 cd firestore-gcs-export
 ```
+### 2. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Set up Google Cloud credentials
+Ensure you have a service account with access to Firestore and GCS. Download the JSON key and replace 
+```bash 
+"serviceAccountKey.json" 
+```
+with the path to your key. 
+
+## Usage
+Run the export script:
+```bash
+python main.py
+```
+This will:
+- Query Firestore documents
+- Convert them to JSON
+- Upload the file to your specified GCS bucket
