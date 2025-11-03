@@ -77,8 +77,8 @@ for user in users:
     "source_url" : url
     }]
 
-    truncate = "TRUNCATE TABLE `dash-beta-e61d0.dash_beta_database.document`;"
-    result = client_bq.query(truncate).result()
+    # truncate = "TRUNCATE TABLE `dash-beta-e61d0.dash_beta_database.document`;"
+    # result = client_bq.query(truncate).result()
 
     table_ref = client_bq.dataset(dataset_id).table(table)
     # client_bq.insert_rows_json(table_ref, row_to_insert)
