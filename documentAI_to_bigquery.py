@@ -30,9 +30,8 @@ bucket = client_storage.get_bucket(bucker_name)
 users = bucket.list_blobs()
 
 for user in users:
-    # Blob to binary for processing 
-    url = file_path + user.name
-    print(url)
+    url = user.name
+    
     # DocumentAI is only used to parse pdfs
     if not url.endswith(".pdf"):
         continue
@@ -68,6 +67,9 @@ for user in users:
     }
 
     document_id = str(uuid.uuid4())
+
+    # Update url to include gs://.. 
+    url = file_path + url
 
     row_to_insert = [{
     "document_id": document_id,
