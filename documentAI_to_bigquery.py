@@ -31,7 +31,8 @@ users = bucket.list_blobs()
 
 for user in users:
     # Blob to binary for processing 
-    url = user.name
+    url = file_path + user.name
+    print(url)
     # DocumentAI is only used to parse pdfs
     if not url.endswith(".pdf"):
         continue
