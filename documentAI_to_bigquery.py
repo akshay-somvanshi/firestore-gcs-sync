@@ -25,6 +25,12 @@ client_docAi = documentai_v1.DocumentProcessorServiceClient(
     client_options={"api_endpoint": "eu-documentai.googleapis.com"}
 )
 
+query_documents = f"""
+    SELECT source_url 
+    FROM `{project_id}.{dataset_id}.{table}`"""
+
+existing_docs = {row.source_url for row in client_bq.query(query_documents).result()}
+
 # Retrieve the bucket with user files 
 bucket = client_storage.get_bucket(bucker_name)
 users = bucket.list_blobs()
@@ -34,6 +40,10 @@ for user in users:
     
     # DocumentAI is only used to parse pdfs
     if not url.endswith(".pdf"):
+        continue
+
+    if any(url in doc_url for doc_url in existing_docs):
+        print("Document already exists")
         continue
 
     parts = url.split("/")
